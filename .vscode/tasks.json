@@ -60,6 +60,48 @@
                 "cwd": "${workspaceRoot}"
             },
             "problemMatcher": "$tsc-watch"
+        },
+        {
+            "taskName": "C Reference (x64, VS2017 Community)",
+            "suppressTaskName": true,
+            "command": "vccexe",
+            "echoCommand": true,
+            "args": [
+                "--platform:amd64",
+                "--vcvarsall:C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+                "/nologo",
+                "/DUNICODE",
+                "/D_DEBUG",
+                "/Febin\\cref",
+                "/Foobj\\cref_main",
+                "cref\\main.c",
+                "Ole32.lib"
+            ],
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "C Reference (x86, VS2017 Community)",
+            "suppressTaskName": true,
+            "command": "vccexe",
+            "echoCommand": true,
+            "args": [
+                "--platform:x86",
+                "--vcvarsall:C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+                "/nologo",
+                "/DUNICODE",
+                "/D_DEBUG",
+                "/Febin\\cref",
+                "/Foobj\\cref_main",
+                "cref\\main.c",
+                "Ole32.lib"
+            ],
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "problemMatcher": "$msCompile"
         }
     ]
 }

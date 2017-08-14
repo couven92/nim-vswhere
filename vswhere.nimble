@@ -41,4 +41,17 @@ task docall, "Document srcDir recursively":
   recurseDir(srcDir, docDir)
 
 task test, "Test runs the package":
-  exec "nim compile --run -o:" & ("bin" / packageName) & " " & (srcDir / packageName)
+  exec "nim compile --run -o:\"" & ("bin" / packageName) & "\" \"" & (srcDir / packageName) & "\""
+
+task cref, "Build C reference source":
+  var vccopts = "--command:cl.exe"
+  vccopts.add(' ')
+  vccopts.add(get("vcc.options.always"))
+  vccopts.add(' ')
+  vccopts.add(get("passC"))
+  for i in 2 ..< paramCount():
+    vccopts.add(" --")
+    vccopts.add(paramStr(i).quoteIfContainsWhite())
+  let cmd = "vccexe.exe " & vccopts & " /Fe:\"" & ("bin" / "cref") & "\" \"" & ("cref" / "main.c") & "\""
+  exec cmd
+
