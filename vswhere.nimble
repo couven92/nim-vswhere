@@ -1,7 +1,7 @@
 # Package
 
 packageName   = "vswhere"
-version       = "0.1.0"
+version       = "2.1.3"
 author        = "Fredrik H\x9Bis\x91ther Rasch"
 description   = "Visual Studio discovery tool for Nim"
 license       = "MIT"

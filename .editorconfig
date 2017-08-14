@@ -1,6 +1,6 @@
 root = true
 
-[*.{nim,nimble}]
+[*.{nim,nims,nimble}]
 charset = utf-8-bom
 indent_size = 2
 indent_style = space
