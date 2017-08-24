@@ -1,7 +1,22 @@
 import windowssdk / importc_windowssdk
 import windowssdk / shared / guiddef
+import windowssdk / shared / winerror
 import windowssdk / um / unknwn
 import windowssdk / um / winnt
+
+import ospaths
+
+proc getSetupConfigurationLibFile(): string {.compileTime.} =
+  var libPath = currentSourcePath().parentDir().parentDir().parentDir() / "Microsoft-vswhere" / "packages" / "Microsoft.VisualStudio.Setup.Configuration.Native.1.11.2290" / "lib" / "native" / "v140"
+  when defined(i386):
+    libPath = libPath / "x86"
+  elif defined(amd64):
+    libPath = libPath / "x64"
+  libPath = libPath / "Microsoft.VisualStudio.Setup.Configuration.Native.lib"
+  result = libPath
+
+const setupConfigurationLibFilePath = getSetupConfigurationLibFile()
+{.passL: setupConfigurationLibFilePath.}
 
 type InstanceState* = enum
   ## The state of an instance.
@@ -76,3 +91,6 @@ converter toISetupConfiguration*(x: ptr ISetupHelper): ptr IUnknown =
   cast[ptr IUnknown](x)
 
 var clsid_SetupConfiguration* = ClsId(data1: 0x177F0C4A, data2: 0x1CD3, data3: 0x4DE7, data4: [0xA3'u8, 0x2C'u8, 0x71'u8, 0xDB'u8, 0xBB'u8, 0x9F'u8, 0xA3'u8, 0x6D'u8])
+
+proc getSetupConfiguration*(ppConfiguration: var ptr ISetupConfiguration, pReserved: pointer): HResult
+  {.importc: "GetSetupConfiguration", stdcall.}

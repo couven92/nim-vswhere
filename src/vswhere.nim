@@ -2,23 +2,20 @@ import windowssdk / um / winnt
 import windowssdk / um / combaseapi
 import windowssdk / um / objbase
 import windowssdk / shared / wtypesbase
+import windowssdk / shared / winerror
 import vswherepkg / setup_configuration
 
 import os
 
 when isMainModule:
   var hr: HResult
-  var setupConfigPtr: pointer
-  var clsContext: ClsCtx
+  var setupConfig: ptr ISetupConfiguration
+  echo "Hello World"
 
-  hr = comInitialize()
-  if hr.int32 != 0:
-    raiseOsError(hr.OSErrorCode)
-  
-  hr = newComInstance(clsid_SetupConfiguration.addr, nil, clsContext, iid_ISetupConfiguration.addr, setupConfigPtr)
-  let setupConfig = cast[ptr ISetupConfiguration](setupConfigPtr)
-
-  echo hr.repr()
+  hr = getSetupConfiguration(setupConfig, nil)
+  if hr.failed:
+    echo hr
+    raiseOSError(cast[OSErrorCode](hr))
+  echo "Hello World"
   echo setupConfig.repr()
-  if hr.int32 != 0:
-    raiseOsError(hr.OSErrorCode)
+    
