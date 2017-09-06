@@ -19,6 +19,10 @@ import strutils, ospaths
 before test:
   mkDir "bin"
 
+before cref:
+  mkDir "obj"
+  mkDir "bin"
+
 before docall:
   mkDir "doc"
 
@@ -44,14 +48,22 @@ task test, "Test runs the package":
   exec "nim compile --run -o:\"" & ("bin" / packageName) & "\" \"" & (srcDir / packageName) & "\""
 
 task cref, "Build C reference source":
-  var vccopts = "--command:cl.exe"
-  vccopts.add(' ')
+  var vccopts: seq[string] = @[] 
+  vccopts.add("--command:cl.exe")
   vccopts.add(get("vcc.options.always"))
-  vccopts.add(' ')
-  vccopts.add(get("passC"))
-  for i in 2 ..< paramCount():
-    vccopts.add(" --")
-    vccopts.add(paramStr(i).quoteIfContainsWhite())
-  let cmd = "vccexe.exe " & vccopts & " /Fe:\"" & ("bin" / "cref") & "\" \"" & ("cref" / "main.c") & "\""
+  when not defined(release) or defined(debug):
+    vccopts.add get("vcc.options.debug")
+  let vccopts_string = vccopts.join(" ")
+  var cmd_parts: seq[string] = @[]
+  cmd_parts.add "vccexe.exe"
+  cmd_parts.add vccopts_string
+  cmd_parts.add "/Fo:\"" & ("obj" / "cref.obj") & "\""
+  cmd_parts.add "/Fd:\"" & ("bin" / "cref.pdb") & "\""
+  cmd_parts.add "/Fe:\"" & ("bin" / "cref") & "\""
+  cmd_parts.add "\"" & ("cref" / "main.c") & "\""
+  cmd_parts.add "Secur32.lib"
+  cmd_parts.add "ole32.lib"
+  let cmd = cmd_parts.join(" ")
+  echo cmd
   exec cmd
 
