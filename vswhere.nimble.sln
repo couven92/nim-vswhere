@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99E1894A-3DCA-422D-BF46-0CDE156416D4}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.gitmodules = .gitmodules
+		LICENSE = LICENSE
+		vswhere.nimble = vswhere.nimble
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vcxproj", "vcxproj", "{D657CE5E-57E6-44E4-AA79-91EACB8F9160}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vswhere", "vcxproj\vswhere.vcxproj", "{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9A15F326-07E7-4526-ACAA-888AB5A2888E}"
+	ProjectSection(SolutionItems) = preProject
+		src\vswhere.nim = src\vswhere.nim
+		src\vswhere.nim.cfg = src\vswhere.nim.cfg
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vswherepkg", "vswherepkg", "{BD4791E6-2E9B-42B4-80F3-C5537AEDF1A1}"
+	ProjectSection(SolutionItems) = preProject
+		src\vswherepkg\setup_configuration.nim = src\vswherepkg\setup_configuration.nim
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Debug|x64.ActiveCfg = Debug|x64
+		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Debug|x64.Build.0 = Debug|x64
+		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Debug|x86.ActiveCfg = Debug|Win32
+		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Debug|x86.Build.0 = Debug|Win32
+		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Release|x64.ActiveCfg = Release|x64
+		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Release|x64.Build.0 = Release|x64
+		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Release|x86.ActiveCfg = Release|Win32
+		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E} = {D657CE5E-57E6-44E4-AA79-91EACB8F9160}
+		{BD4791E6-2E9B-42B4-80F3-C5537AEDF1A1} = {9A15F326-07E7-4526-ACAA-888AB5A2888E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BDFFF3E0-95BB-4B75-A0CE-92A7788918CC}
+	EndGlobalSection
+EndGlobal
