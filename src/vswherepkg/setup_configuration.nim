@@ -1,24 +1,15 @@
-import windowssdk / importc_windowssdk
+﻿import windowssdk / importc_windowssdk
 import windowssdk / shared / guiddef
 import windowssdk / shared / winerror
 import windowssdk / um / unknwn
 import windowssdk / um / winnt
 
-import ospaths
+import dynlib
 
-proc getSetupConfigurationLibFile(): string {.compileTime.} =
-  var libPath = currentSourcePath().parentDir().parentDir().parentDir() / "Microsoft-vswhere" / "packages" / "Microsoft.VisualStudio.Setup.Configuration.Native.1.11.2290" / "lib" / "native" / "v140"
-  when defined(i386):
-    libPath = libPath / "x86"
-  elif defined(amd64):
-    libPath = libPath / "x64"
-  libPath = libPath / "Microsoft.VisualStudio.Setup.Configuration.Native.lib"
-  result = libPath
+const setup_config_dynlib = "Microsoft.VisualStudio.Setup.Configuration.Native.dll"
+{.pragma: setupConfigurationDll, dynlib: setup_config_dynlib.}
 
-const setupConfigurationLibFilePath = getSetupConfigurationLibFile()
-{.passL: setupConfigurationLibFilePath.}
-
-type InstanceState* = enum
+type InstanceState* {.size: sizeof(int32).} = enum
   ## The state of an instance.
   eNone = 0             ## The instance state has not been determined.
   eLocal = 1            ## The instance installation path exists.
@@ -27,70 +18,173 @@ type InstanceState* = enum
   eNoErrors = 8         ## No errors were reported for the instance.
   eComplete = 0xffff    ## The instance represents a complete install.
 
-var iid_ISetupInstance* = Iid(data1: 0xB41463C3'u32, data2: 0x8866, data3: 0x43B5, data4: [0xBC'u8, 0x33'u8, 0x2B'u8, 0x06'u8, 0x76'u8, 0xF7'u8, 0xF4'u8, 0x2E'u8])
+var
+  iid_ISetupInstance* = newIid("B41463C3-8866-43B5-BC33-2B0676F7F42E")
+  iid_ISetupInstance2* = newIid("89143C9A-05AF-49B0-B717-72E218A2185C")
+  iid_ISetupInstanceCatalog* = newIid("9AD8E40F-39A2-40F1-BF64-0A6C50DD9EEB")
+  iid_ISetupLocalizedProperties* = newIid("F4BD7382-FE27-4AB4-B974-9905B2A148B0")
+  iid_IEnumSetupInstances* = newIid("6380BCFF-41D3-4B2E-8B2E-BF8A6810C848")
+  iid_ISetupConfiguration* = newIid("42843719-DB4C-46C2-8E7C-64F1816EFD5B")
+  iid_ISetupConfiguration2* = newIid("26AAB78C-4A60-49D6-AF3B-3C35BC93365D")
+  iid_ISetupPackageReference* = newIid("da8d8a16-b2b6-4487-a2f1-594ccccd6bf5")
+  iid_ISetupHelper* = newIid("42b21b78-6192-463e-87bf-d577838f1d5c")
+  iid_ISetupErrorState* = newIid("46DCCD94-A287-476A-851E-DFBC2FFDBC20")
+  iid_ISetupErrorState2* = newIid("9871385B-CA69-48F2-BC1F-7A37CBF0B1EF")
+  iid_ISetupFailedPackageReference* = newIid("E73559CD-7003-4022-B134-27DC650B280F")
+  iid_ISetupFailedPackageReference2* = newIid("0FAD873E-E874-42E3-B268-4FE2F096B9CA")
+  iid_ISetupPropertyStore* = newIid("C601C175-A3BE-44BC-91F6-4568D230FC83")
+  iid_ISetupLocalizedPropertyStore* = newIid("5BB53126-E0D5-43DF-80F1-6B161E5C6F6C")
+
+  clsid_SetupConfiguration* = newClsId("177F0C4A-1CD3-4DE7-A32C-71DBBB9FA36D")
+
 type
   ISetupInstanceVtbl = object
     vtbl_IUnknown: IUnknownVtbl
     getInstanceId: proc(pbstrInstanceId: pointer): HResult {.stdcall.}
+    getInstallDate: proc(pInstallDate: var uint64): HResult {.stdcall.}
+    getInstallationName: proc(pbstrInstallationName: var pointer): HResult {.stdcall.}
+    getInstallationPath: proc(pbstrInstallationPath: var pointer): HResult {.stdcall.}
+    getInstallationVersion: proc(pbstrInstallationVersion: var pointer): HResult {.stdcall.}
+    getDisplayName: proc(lcid: uint32, pbstrDisplayName: var pointer): HResult {.stdcall.}
+    getDescription: proc(lcid: uint32, pbstrDescription: var pointer): HResult {.stdcall.}
+    resolvePath: proc(pwszRelativePath: pointer, pbstrAbsolutePath: var pointer): HResult {.stdcall.}
   ISetupInstance* = object
     lpVtbl: ptr ISetupInstanceVtbl
-converter toIUnknown*(x: ptr ISetupInstance): ptr IUnknown =
-  cast[ptr IUnknown](x)
 
-type
   ISetupInstance2Vtbl = object
     vtbl_ISetupInstance: ISetupInstanceVtbl
+    getState: proc(pState: var InstanceState): HResult {.stdcall.}
+    getPackages: proc(ppsaPackages: var pointer): HResult {.stdcall.}
+    getProduct: proc(ppPackage: var ptr ISetupPackageReference): HResult {.stdcall.}
+    getProductPath: proc(pbstrProductPath: var pointer): HResult {.stdcall.}
+    getErrors: proc(ppErrorState: var ptr ISetupErrorState): HResult {.stdcall.}
+    isLaunchable: proc(pfIsLaunchable: var int16): HResult {.stdcall.}
+    isComplete: proc(pfIsComplete: var int16): HResult {.stdcall.}
+    getProperties: proc(ppProperties: var ptr ISetupPropertyStore): HResult {.stdcall.}
+    getEnginePath: proc(pbstrEnginePath: var pointer): HResult {.stdcall.}
   ISetupInstance2* = object
     lpVtbl: ptr ISetupInstance2Vtbl
+
+  ISetupInstanceCatalogVtbl = object
+    vtbl_IUnknown: IUnknownVtbl
+    getCatalogInfo: proc(ppCatalogInfo: var ptr ISetupPropertyStore): HResult {.stdcall.}
+    isPrerelease: proc(pfIsPrerelease: var int16): HResult {.stdcall.}
+  ISetupInstanceCatalog* = object
+    lpVtbl: ptr ISetupInstanceCatalogVtbl
+
+  ISetupLocalizedPropertiesVtbl = object
+    vtbl_IUnknown: IUnknownVtbl
+    getLocalizedProperties: proc(ppLocalizedProperties: var ptr ISetupLocalizedPropertyStore): HResult {.stdcall.}
+    getLocalizedChannelProperties: proc(ppLocalizedChannelProperties: var ptr ISetupLocalizedPropertyStore): HResult {.stdcall.}
+  ISetupLocalizedProperties* = object
+    lpVtbl: ptr ISetupLocalizedPropertiesVtbl
+
+  IEnumSetupInstancesVtbl = object
+    vtbl_IUnknown: IUnknownVtbl
+    next: proc(celt: uint32, rgelt: var ptr ISetupInstance, pceltFetched: var uint32): HResult {.stdcall.}
+    skip: proc(celt: uint32): HResult {.stdcall.}
+    reset: proc(): HResult {.stdcall.}
+    clone: proc(ppenum: var ptr IEnumSetupInstances): HResult {.stdcall.}
+  IEnumSetupInstances* = object
+    lpVtbl: ptr IEnumSetupInstancesVtbl
+  
+  ISetupConfigurationVtbl = object
+    vtbl_IUnknown: IUnknownVtbl
+    enumInstances: proc(ppEnumInstances: var ptr IEnumSetupInstances): HResult {.stdcall.}
+    getInstanceForCurrentProcess: proc(ppInstance: var ptr ISetupInstance): HResult {.stdcall.}
+    getInstanceForPath: proc(wzPath: WideCString, ppInstance: var ptr ISetupInstance): HResult {.stdcall.}
+  ISetupConfiguration* = object
+    lpVtbl: ptr ISetupConfigurationVtbl
+
+  ISetupConfiguration2Vtbl = object
+    vtbl_ISetupConfiguration: ISetupConfigurationVtbl
+    enumAllInstances: proc(ppEnumInstances: var ptr IEnumSetupInstances): HResult {.stdcall.}
+  ISetupConfiguration2* = object
+    lpVtbl: ptr ISetupConfiguration2Vtbl
+
+  ISetupPackageReferenceVtbl = object
+    vtbl_IUnknown: IUnknownVtbl
+    getId: proc(pbstrId: var pointer): HResult {.stdcall.}
+    getVersion: proc(pbstrVersion: var pointer): HResult {.stdcall.}
+    getChip: proc(pbstrChip: var pointer): HResult {.stdcall.}
+    getLanguage: proc(pbstrLanguage: var pointer): HResult {.stdcall.}
+    getBranch: proc(pbstrBranch: var pointer): HResult {.stdcall.}
+    getType: proc(pbstrType: var pointer): HResult {.stdcall.}
+    getUniqueId: proc(pbstrUniqueId: var pointer): HResult {.stdcall.}
+    getIsExtension: proc(pbstrIsExtension: var int16): HResult {.stdcall.}
+  ISetupPackageReference* = object
+    lpVtbl: ptr ISetupPackageReferenceVtbl
+    
+  ISetupHelperVtbl = object
+    vtbl_IUnknown: IUnknownVtbl
+    parseVersion: proc(pwszVersion: pointer, pullVersion: var uint64): HResult {.stdcall.}
+    parseVersionRange: proc(pwszVersionRange: pointer, pullMinVersion, pullMaxVersion: var uint64): HResult {.stdcall.}
+  ISetupHelper* = object
+    lpVtbl: ptr ISetupHelperVtbl
+
+  ISetupErrorStateVtbl = object
+    vtbl_IUnknown: IUnknownVtbl
+    getFailedPackages: proc(ppsaFailedPackages: var pointer): HResult {.stdcall.}
+    getSkippedPackages: proc(ppsaSkippedPackages: var pointer): HResult {.stdcall.}
+  ISetupErrorState* = object
+    lpVtbl: ptr ISetupErrorStateVtbl
+
+  ISetupErrorState2Vtbl = object
+    vtbl_ISetupErrorState: ISetupErrorStateVtbl
+    getErrorLogFilePath: proc(pbstrErrorLogFilePath: var pointer): HResult {.stdcall.}
+    getLogFilePath: proc(pbstrLogFilePath: var pointer): HResult {.stdcall.}
+  ISetupErrorState2* = object
+    lpVtbl: ptr ISetupErrorState2Vtbl
+
+  ISetupFailedPackageReferenceVtbl = object
+    vtbl_ISetupPackageReference: ISetupPackageReferenceVtbl
+  ISetupFailedPackageReference* = object
+    lpVtbl: ptr ISetupFailedPackageReferenceVtbl
+
+  ISetupFailedPackageReference2Vtbl = object
+    vtbl_ISetupFailedPackageReference: ISetupFailedPackageReferenceVtbl
+    getLogFilePath: proc(pbstrLogFilePath: var pointer): HResult {.stdcall.}
+    getDescription: proc(pbstrDescription: var pointer): HResult {.stdcall.}
+    getSignature: proc(pbstrSignature: var pointer): HResult {.stdcall.}
+    getDetails: proc(ppsaDetails: var pointer): HResult {.stdcall.}
+    getAffectedPackages: proc(ppsaAffectedPackages: var pointer): HResult {.stdcall.}
+  ISetupFailedPackageReference2* = object
+    lpVtbl: ptr ISetupFailedPackageReference2Vtbl
+
+  ISetupPropertyStoreVtbl = object
+    vtbl_IUnknown: IUnknownVtbl
+    getNames: proc(ppsaNames: var pointer): HResult {.stdcall.}
+    getValue: proc(pwszName: pointer, pvtValue: var pointer): HResult {.stdcall.}
+  ISetupPropertyStore* = object
+    lpVtbl: ptr ISetupPropertyStoreVtbl
+  
+  ISetupLocalizedPropertyStoreVtbl = object
+    vtbl_IUnknown: IUnknownVtbl
+    getNames: proc(lcid: uint32, ppsaNames: var pointer): HResult {.stdcall.}
+    getValue: proc(pwszName: pointer, lcid: uint32, pvtValue: var pointer): HResult {.stdcall.}
+  ISetupLocalizedPropertyStore* = object
+    lpVtbl: ptr ISetupLocalizedPropertyStoreVtbl
+
+converter toIUnknown*(x: ptr ISetupInstance): ptr IUnknown =
+  cast[ptr IUnknown](x)
 converter toISetupInstance*(x: ptr ISetupInstance2): ptr ISetupInstance =
   cast[ptr ISetupInstance](x)
 
-var iid_IEnumSetupInstances* = Iid(data1: 0x6380BCFF'u32, data2: 0x41D3, data3: 0x4B2E, data4: [0x8B'u8, 0x2E'u8, 0xBF'u8, 0x8A'u8, 0x68'u8, 0x10'u8, 0xC8'u8, 0x48'u8])
-type
-  IEnumSetupInstancesVtbl = object
-    vtbl_IUnknown: IUnknownVtbl
-  IEnumSetupInstances* = object
-    lpVtbl: ptr IEnumSetupInstancesVtbl
 converter toIUnknown*(x: ptr IEnumSetupInstances): ptr IUnknown =
   cast[ptr IUnknown](x)
-
-var iid_ISetupConfiguration* = Iid(data1: 0x42843719'u32, data2: 0xDB4C, data3: 0x46C2, data4: [0x8E'u8, 0x7C'u8, 0x64'u8, 0xF1'u8, 0x81'u8, 0x6E'u8, 0xFD'u8, 0x5B'u8])
-type
-  ISetupConfigurationVtbl = object
-    vtbl_IUnknown: IUnknownVtbl
-  ISetupConfiguration* = object
-    lpVtbl: ptr ISetupConfigurationVtbl
 converter toIUnknown*(x: ptr ISetupConfiguration): ptr IUnknown =
   cast[ptr IUnknown](x)
 
-var iid_ISetupConfiguration2* = Iid(data1: 0x26AAB78C'u32, data2: 0x4A60, data3: 0x49D6, data4: [0xAF'u8, 0x3B'u8, 0x3C'u8, 0x35'u8, 0xBC'u8, 0x93'u8, 0x36'u8, 0x5D'u8])
-type
-  ISetupConfiguration2Vtbl = object
-    vtbl_ISetupConfiguration: ISetupConfigurationVtbl
-  ISetupConfiguration2* = object
-    lpVtbl: ptr ISetupConfiguration2Vtbl
 converter toISetupConfiguration*(x: ptr ISetupConfiguration2): ptr ISetupConfiguration =
   cast[ptr ISetupConfiguration](x)
 
-var iid_ISetupPackageReference* = Iid(data1: 0xda8d8a16'u32, data2: 0xb2b6, data3: 0x4487, data4: [0xa2'u8, 0xf1'u8, 0x59'u8, 0x4c'u8, 0xcc'u8, 0xcd'u8, 0x6b'u8, 0xf5'u8])
-type
-  ISetupPackageReferenceVtbl = object
-    vtbl_IUnknown: IUnknownVtbl
-  ISetupPackageReference* = object
-    lpVtbl: ptr ISetupPackageReferenceVtbl
 converter toISetupConfiguration*(x: ptr ISetupPackageReference): ptr IUnknown =
   cast[ptr IUnknown](x)
 
-var iid_ISetupHelper* = Iid(data1: 0x42b21b78'u32, data2: 0x6192, data3: 0x463e, data4: [0x87'u8, 0xbf'u8, 0xd5'u8, 0x77'u8, 0x83'u8, 0x8f'u8, 0x1d'u8, 0x5c'u8])
-type
-  ISetupHelperVtbl = object
-    vtbl_IUnknown: IUnknownVtbl
-  ISetupHelper* = object
-    lpVtbl: ptr ISetupHelperVtbl
 converter toISetupConfiguration*(x: ptr ISetupHelper): ptr IUnknown =
   cast[ptr IUnknown](x)
 
-var clsid_SetupConfiguration* = ClsId(data1: 0x177F0C4A, data2: 0x1CD3, data3: 0x4DE7, data4: [0xA3'u8, 0x2C'u8, 0x71'u8, 0xDB'u8, 0xBB'u8, 0x9F'u8, 0xA3'u8, 0x6D'u8])
-
-proc getSetupConfiguration*(ppConfiguration: var ptr ISetupConfiguration, pReserved: pointer): HResult
-  {.importc: "GetSetupConfiguration", stdcall.}
+proc getSetupConfiguration*(
+  ppConfiguration: var ptr ISetupConfiguration, 
+  pReserved: pointer
+  ): HResult {.stdcall, importc: "GetSetupConfiguration", setupConfigurationDll.}
