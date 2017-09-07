@@ -11,15 +11,24 @@ import os
 when isMainModule:
   var hr: HResult
   var setupConfig: ptr ISetupConfiguration
-  hr = getSetupConfiguration(setupConfig, nil)
+  hr = coInitialize()
   if hr.failed:
-    echo hr
     raiseOSError(cast[OSErrorCode](hr))
-  echo setupConfig.repr()
-  var psetupConfig2: pointer
-  hr = queryInterface(setupConfig, iid_ISetupConfiguration2.addr, psetupConfig2)
+  hr = coCreateInstance(clsid_SetupConfiguration, clsctx_Inproc_Server, iid_ISetupConfiguration, setupConfig)
   if hr.failed:
-    echo hr
     raiseOSError(cast[OSErrorCode](hr))
-  let setupConfig2 = cast[ptr ISetupConfiguration2](psetupConfig2)
-  echo setupConfig2.repr()
+  echo repr(setupConfig)
+  var setupConfig2: ptr ISetupConfiguration2
+  hr = queryInterface(setupConfig, iid_ISetupConfiguration2, setupConfig2)
+  if hr.failed:
+    raiseOSError(cast[OSErrorCode](hr))
+  echo repr(setupConfig2)
+
+  hr = setupConfig.release()
+  if hr.failed:
+    raiseOSError(cast[OSErrorCode](hr))
+  setupConfig = nil
+  hr = setupConfig2.release()
+  if hr.failed:
+    raiseOSError(cast[OSErrorCode](hr))
+  setupConfig2 = nil

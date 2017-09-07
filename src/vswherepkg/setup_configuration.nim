@@ -6,9 +6,6 @@ import windowssdk / um / winnt
 
 import dynlib
 
-const setup_config_dynlib = "Microsoft.VisualStudio.Setup.Configuration.Native.dll"
-{.pragma: setupConfigurationDll, dynlib: setup_config_dynlib.}
-
 type InstanceState* {.size: sizeof(int32).} = enum
   ## The state of an instance.
   eNone = 0             ## The instance state has not been determined.
@@ -18,7 +15,7 @@ type InstanceState* {.size: sizeof(int32).} = enum
   eNoErrors = 8         ## No errors were reported for the instance.
   eComplete = 0xffff    ## The instance represents a complete install.
 
-var
+const
   iid_ISetupInstance* = newIid("B41463C3-8866-43B5-BC33-2B0676F7F42E")
   iid_ISetupInstance2* = newIid("89143C9A-05AF-49B0-B717-72E218A2185C")
   iid_ISetupInstanceCatalog* = newIid("9AD8E40F-39A2-40F1-BF64-0A6C50DD9EEB")
@@ -169,22 +166,21 @@ converter toIUnknown*(x: ptr ISetupInstance): ptr IUnknown =
   cast[ptr IUnknown](x)
 converter toISetupInstance*(x: ptr ISetupInstance2): ptr ISetupInstance =
   cast[ptr ISetupInstance](x)
-
 converter toIUnknown*(x: ptr IEnumSetupInstances): ptr IUnknown =
   cast[ptr IUnknown](x)
 converter toIUnknown*(x: ptr ISetupConfiguration): ptr IUnknown =
   cast[ptr IUnknown](x)
-
 converter toISetupConfiguration*(x: ptr ISetupConfiguration2): ptr ISetupConfiguration =
   cast[ptr ISetupConfiguration](x)
-
+converter toIUnknown*(x: ptr ISetupConfiguration2): ptr IUnknown =
+  cast[ptr IUnknown](x)
 converter toISetupConfiguration*(x: ptr ISetupPackageReference): ptr IUnknown =
   cast[ptr IUnknown](x)
-
 converter toISetupConfiguration*(x: ptr ISetupHelper): ptr IUnknown =
   cast[ptr IUnknown](x)
-
-proc getSetupConfiguration*(
-  ppConfiguration: var ptr ISetupConfiguration, 
-  pReserved: pointer
-  ): HResult {.stdcall, importc: "GetSetupConfiguration", setupConfigurationDll.}
+converter toIUnknown*(x: ptr ISetupErrorState): ptr IUnknown =
+  cast[ptr IUnknown](x)
+converter toISetupPackageReference*(x: ptr ISetupFailedPackageReference): ptr ISetupPackageReference =
+  cast[ptr ISetupPackageReference](x)
+converter toIUnknown*(x: ptr ISetupPropertyStore): ptr IUnknown =
+  cast[ptr IUnknown](x)
