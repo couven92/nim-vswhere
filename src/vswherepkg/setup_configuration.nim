@@ -4,7 +4,7 @@ import windowssdk / shared / winerror
 import windowssdk / um / unknwn
 import windowssdk / um / winnt
 
-import dynlib
+import os, dynlib
 
 type InstanceState* {.size: sizeof(int32).} = enum
   ## The state of an instance.
@@ -184,3 +184,53 @@ converter toISetupPackageReference*(x: ptr ISetupFailedPackageReference): ptr IS
   cast[ptr ISetupPackageReference](x)
 converter toIUnknown*(x: ptr ISetupPropertyStore): ptr IUnknown =
   cast[ptr IUnknown](x)
+
+proc next*(this: ptr IEnumSetupInstances, rgelt: var openarray[ptr ISetupInstance], pceltFetched: var uint32): HResult =
+  this.lpVtbl.next(len(rgelt).uint32, addr(rgelt[0]), pceltFetched)
+proc next*(this: ptr IEnumSetupInstances, pSetupInstance: var ptr ISetupInstance): HResult =
+  var
+    rgelt: array[1, ptr ISetupInstance]
+    celtFetched: uint32
+  result = next(this, rgelt, celtFetched)
+  pSetupInstance = rgelt[0]
+proc next*(this: ptr IEnumSetupInstances): ptr ISetupInstance =
+  let hr = next(this, result)
+  if hr == s_false: result = nil
+  elif hr.failed: raiseOSError(hr)
+proc skip*(this: ptr IEnumSetupInstances, count: uint32): HResult =
+  this.lpVtbl.skip(count)
+proc reset_HResult*(this: ptr IEnumSetupInstances): HResult =
+  this.lpVtbl.reset()
+proc reset*(this: ptr IEnumSetupInstances) =
+  let hr = reset_HResult(this)
+  if hr.failed: raiseOSError(hr)
+proc clone*(this: ptr IEnumSetupInstances, ppenum: var ptr IEnumSetupInstances): HResult =
+  this.lpVtbl.clone(ppenum)
+proc clone*(this: ptr IEnumSetupInstances): ptr IEnumSetupInstances =
+  let hr = clone(this, result)
+  if hr.failed: raiseOSError(hr)
+iterator items*(this: ptr IEnumSetupInstances): ptr ISetupInstance =
+  var
+    value: ptr ISetupInstance
+  while true:
+    let hr = next(this, value)
+    if hr == s_false: break
+    elif hr.failed: raiseOSError(hr)
+    yield value
+
+proc enumInstances*(this: ptr ISetupConfiguration, ppEnumInstances: var ptr IEnumSetupInstances): HResult =
+  this.lpVtbl.enumInstances(ppEnumInstances)
+proc enumInstances*(this: ptr ISetupConfiguration): ptr IEnumSetupInstances =
+  let hr = enumInstances(this, result)
+  if hr.failed: raiseOSError(hr)
+proc getInstanceForCurrentProcess*(this: ptr ISetupConfiguration, ppInstance: var ptr ISetupInstance): HResult =
+  this.lpVtbl.getInstanceForCurrentProcess(ppInstance)
+proc getInstanceForCurrentProcess*(this: ptr ISetupConfiguration): ptr ISetupInstance =
+  let hr = getInstanceForCurrentProcess(this, result)
+  if hr.failed: raiseOSError(hr)
+
+proc enumAllInstances*(this: ptr ISetupConfiguration2, ppEnumInstances: var ptr IEnumSetupInstances): HResult =
+  this.lpVtbl.enumAllInstances(ppEnumInstances)
+proc enumAllInstances*(this: ptr ISetupConfiguration2): ptr IEnumSetupInstances =
+  let hr = enumAllInstances(this, result)
+  if hr.failed: raiseOSError(hr)
