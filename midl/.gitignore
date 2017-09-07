@@ -1,0 +1,3 @@
+# Ignore MIDL generated headers
+*_h.h
+

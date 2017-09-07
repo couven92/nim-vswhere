@@ -28,6 +28,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vswherepkg", "vswherepkg", 
 		src\vswherepkg\setup_configuration.nim = src\vswherepkg\setup_configuration.nim
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "midl", "midl", "{B8834E4A-F096-4114-9280-BC9517537E65}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Setup.Configuration.MidlC.Test", "midl\Setup.Configuration.MidlC.Test.vcxproj", "{41EE9B55-F30E-4D63-946B-A498110904AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -44,6 +48,14 @@ Global
 		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Release|x64.Build.0 = Release|x64
 		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Release|x86.ActiveCfg = Release|Win32
 		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E}.Release|x86.Build.0 = Release|Win32
+		{41EE9B55-F30E-4D63-946B-A498110904AF}.Debug|x64.ActiveCfg = Debug|x64
+		{41EE9B55-F30E-4D63-946B-A498110904AF}.Debug|x64.Build.0 = Debug|x64
+		{41EE9B55-F30E-4D63-946B-A498110904AF}.Debug|x86.ActiveCfg = Debug|Win32
+		{41EE9B55-F30E-4D63-946B-A498110904AF}.Debug|x86.Build.0 = Debug|Win32
+		{41EE9B55-F30E-4D63-946B-A498110904AF}.Release|x64.ActiveCfg = Release|x64
+		{41EE9B55-F30E-4D63-946B-A498110904AF}.Release|x64.Build.0 = Release|x64
+		{41EE9B55-F30E-4D63-946B-A498110904AF}.Release|x86.ActiveCfg = Release|Win32
+		{41EE9B55-F30E-4D63-946B-A498110904AF}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,6 +63,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{8BCCBDDA-45EA-45C2-9720-AF34462AC67E} = {D657CE5E-57E6-44E4-AA79-91EACB8F9160}
 		{BD4791E6-2E9B-42B4-80F3-C5537AEDF1A1} = {9A15F326-07E7-4526-ACAA-888AB5A2888E}
+		{41EE9B55-F30E-4D63-946B-A498110904AF} = {B8834E4A-F096-4114-9280-BC9517537E65}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BDFFF3E0-95BB-4B75-A0CE-92A7788918CC}
