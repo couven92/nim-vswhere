@@ -78,7 +78,7 @@ type
 
   IEnumSetupInstancesVtbl = object
     vtbl_IUnknown: IUnknownVtbl
-    next: proc(celt: uint32, rgelt: var ptr ISetupInstance, pceltFetched: var uint32): HResult {.stdcall.}
+    next: proc(celt: uint32, rgelt: ptr ptr ISetupInstance, pceltFetched: var uint32): HResult {.stdcall.}
     skip: proc(celt: uint32): HResult {.stdcall.}
     reset: proc(): HResult {.stdcall.}
     clone: proc(ppenum: var ptr IEnumSetupInstances): HResult {.stdcall.}
