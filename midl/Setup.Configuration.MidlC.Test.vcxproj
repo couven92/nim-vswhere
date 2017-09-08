@@ -112,8 +112,12 @@
     <ClInclude Include="Setup.Configuration_h.h">
       <DependentUpon>Setup.Configuration.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Setup.Configuration_i.c">
+      <DependentUpon>Setup.Configuration.idl</DependentUpon>
+    </ClInclude>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <Target Name="Deploy" />
 </Project>
