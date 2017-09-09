@@ -12,7 +12,7 @@ srcDir        = "src"
 # Dependencies
 
 requires "nim >= 0.17.0"
-requires "windowssdk >= 0.1.11"
+requires "windowssdk >= 0.1.12"
 
 import strutils, ospaths
 
@@ -31,6 +31,7 @@ task docall, "Document srcDir recursively":
     for srcFile in listFiles(srcDir):
       if not srcFile.endsWith(".nim"):
         echo "skipping non nim file: $#" % [srcFile]
+        continue
       const htmlExt = ".html"
       let docFile = docDir & srcFile[srcDir.len ..^ htmlExt.len] & htmlExt
       echo "file: $# -> $#" % [srcFile, docFile]
