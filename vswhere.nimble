@@ -12,7 +12,7 @@ srcDir        = "src"
 # Dependencies
 
 requires "nim >= 0.17.0"
-requires "https://github.com/couven92/nim-windowssdk"
+requires "https://github.com/fredrikhr/nim-windowssdk"
 
 import strutils, ospaths
 
